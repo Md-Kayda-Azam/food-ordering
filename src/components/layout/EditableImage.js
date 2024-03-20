@@ -1,40 +1,48 @@
-import Image from "next/image";
-import toast from "react-hot-toast";
+import Image from 'next/image';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function EditableImage({ link, setLink }) {
 
+  const [fileLink, setFileLink] = useState(link ? link : "");
+
   async function handleFileChange(ev) {
     const files = ev.target.files;
+
     if (files?.length === 1) {
-      const data = new FormData;
-      data.set('file', files[0]);
+      const formData = new FormData();
+      formData.append('file', files[0]);
+      formData.append('upload_preset', "n9gejqgm");
 
-      const uploadPromise = fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      }).then(response => {
-        if (response.ok) {
-          return response.json().then(link => {
-            setLink(link);
-          })
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dhj6mwqcf/image/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Something went wrong');
         }
-        throw new Error('Something went wrong');
-      });
 
-      await toast.promise(uploadPromise, {
-        loading: 'Uploading...',
-        success: 'Upload complete',
-        error: 'Upload error',
-      });
+        const data = await response.json();
+        setLink(data.secure_url);
+        setFileLink(data.secure_url);
+        console.log(data.secure_url);
+
+        toast.success('Upload complete');
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error('Upload error');
+      }
     }
   }
 
   return (
     <>
-      {link && (
-        <Image className="rounded-lg w-full h-full mb-1" src={link} width={250} height={250} alt={'avatar'} />
+      {fileLink && (
+        <Image className="rounded-lg w-full h-full mb-1" src={fileLink} width={250} height={250} alt="avatar" />
       )}
-      {!link && (
+      {!fileLink && (
         <div className="text-center bg-gray-200 p-4 text-gray-500 rounded-lg mb-1">
           No image
         </div>

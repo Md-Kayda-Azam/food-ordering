@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -10,7 +11,9 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'dawid-food-ordering.s3.amazonaws.com',
       },
-    ]
+    ],
+    domains: ["res.cloudinary.com"]
+
   }
 }
 
